@@ -11,8 +11,8 @@ app = Flask(__name__)
 def summarize():
     try:
         data = request.json
-        bucket = data["mcp-shared-data-azurestoragesync"]
-        key = data["mcp_test_document.pdf"]
+        bucket = data["s3_bucket"]
+        key = data["s3_key"]
 
         # Download PDF from S3
         s3 = boto3.client("s3")
