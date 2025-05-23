@@ -26,13 +26,13 @@ def summarize():
             text = " ".join([page.extract_text() for page in reader.pages if page.extract_text()])
 
         # Summarize using OpenAI
-        openai.api_key = os.getenv("OPENAI_KEY")
-        openai.api_base = os.getenv("OPENAI_ENDPOINT")
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+        openai.api_base = os.getenv("OPENAI_API_BASE")
         openai.api_type = "azure"
         openai.api_version = "2025-01-01-preview"
 
         response = openai.ChatCompletion.create(
-            engine=os.getenv("OPENAI_DEPLOYMENT"),
+            engine=os.getenv("OPENAI_ENGINE"),
             messages=[
                 {"role": "system", "content": "You summarize PDFs."},
                 {"role": "user", "content": text}
