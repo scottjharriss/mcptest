@@ -32,7 +32,7 @@ def summarize():
         openai.api_version = "2025-01-01-preview"
 
         response = openai.ChatCompletion.create(
-            engine=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+            engine=os.getenv("OPENAI_DEPLOYMENT"),
             messages=[
                 {"role": "system", "content": "You summarize PDFs."},
                 {"role": "user", "content": text}
