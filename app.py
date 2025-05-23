@@ -29,7 +29,7 @@ def summarize():
         client = AzureOpenAI(
             api_key=os.getenv("OPENAI_API_KEY"),
             azure_endpoint=os.getenv("OPENAI_API_BASE"),
-            api_version="2023-07-01-preview"  # Or your correct version
+            api_version="2025-01-01-preview"  # Or your correct version
         )
 
         # Send summarization request
