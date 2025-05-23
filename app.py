@@ -41,7 +41,7 @@ def summarize():
         response = client.chat.completions.create(
             model=os.getenv("OPENAI_ENGINE"),
             messages=[
-                {"role": "system", "content": "You are a helpful assistant that summarizes PDF content."},
+                {"role": "system", "content": "You are a helpful assistant that summarizes PDF content in polished, structured markdown style."},
                 {"role": "user", "content": text}
             ]
         )
