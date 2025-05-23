@@ -11,8 +11,8 @@ app = Flask(__name__)
 def summarize():
     try:
         data = request.json
-        bucket = data["s3_bucket"]
-        key = data["s3_key"]
+        bucket = data["mcp-shared-data-azurestoragesync"]
+        key = data["mcp_test_document.pdf"]
 
         # Download PDF from S3
         s3 = boto3.client("s3")
@@ -26,10 +26,10 @@ def summarize():
             text = " ".join([page.extract_text() for page in reader.pages if page.extract_text()])
 
         # Summarize using OpenAI
-        openai.api_key = os.getenv("AZURE_OPENAI_KEY")
-        openai.api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
+        openai.api_key = os.getenv("OPENAI_KEY")
+        openai.api_base = os.getenv("OPENAI_ENDPOINT")
         openai.api_type = "azure"
-        openai.api_version = "2023-07-01-preview"
+        openai.api_version = "2025-01-01-preview"
 
         response = openai.ChatCompletion.create(
             engine=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
