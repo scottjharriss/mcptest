@@ -9,16 +9,19 @@ from openai import AzureOpenAI
 
 app = Flask(__name__)
 
-@app.route("/summarize", methods=["POST"])
-def summarize():
-    start_time = time.time()
-
+# Upload PDF to S3
+@app.route("/upload", methods=["POST"])
+def upload():
     try:
-        data = request.json
-        bucket = data["s3_bucket"]
-        key = data["s3_key"]
+        file = request.files.get("file")
+        if file is None or file.filename == "":
+            return jsonify(success=False, error="No file uploaded."), 400
 
-        # Initialize S3 client with proper environment variable names
+        # Define S3 bucket and key
+        bucket = "mcp-shared-data-azurestoragesync"
+        key = f"input/{file.filename}"
+
+        # Initialize S3 client
         s3 = boto3.client(
             "s3",
             region_name=os.getenv("AWS_REGION", "us-east-1"),
@@ -26,15 +29,30 @@ def summarize():
             aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
         )
 
-        # Debug: log IAM identity to confirm permissions
-        sts = boto3.client(
-            "sts",
+        # Upload to S3
+        s3.upload_fileobj(file, bucket, key)
+
+        return jsonify(success=True, s3_bucket=bucket, s3_key=key)
+
+    except Exception as e:
+        return jsonify(success=False, error=str(e), trace=traceback.format_exc()), 500
+
+# Summarize PDF from S3
+@app.route("/summarize", methods=["POST"])
+def summarize():
+    start_time = time.time()
+    try:
+        data = request.json
+        bucket = data["s3_bucket"]
+        key = data["s3_key"]
+
+        # Initialize S3 client
+        s3 = boto3.client(
+            "s3",
             region_name=os.getenv("AWS_REGION", "us-east-1"),
             aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
             aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
         )
-        identity = sts.get_caller_identity()
-        print("👤 Using IAM identity:", identity)
 
         # Download file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
@@ -66,7 +84,7 @@ def summarize():
 
         summary = response.choices[0].message.content.strip()
 
-        # Save summary to S3
+        # Save summary back to S3
         output_key = key.replace("input/", "summaries/gpt4.1/").replace(".pdf", ".summary.txt")
         s3.put_object(
             Bucket=bucket,
@@ -97,6 +115,5 @@ def summarize():
             "success": False
         }), 500
 
-# Run locally or via Azure App Service
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80)
